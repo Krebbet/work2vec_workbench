@@ -82,7 +82,7 @@ class Model(Net):
                                     
     # apply a linear layer over the entire vocab.
     # This layer
-    with tf.name_scope('embedding'):
+    with tf.variable_scope('embedding'):
       self.scores = self.linear(self.embed,
                     output_dim = self.vocabulary_size,
                     is_training = self.is_training,
@@ -109,36 +109,7 @@ class Model(Net):
     graph = tf.get_default_graph()
     W= graph.get_tensor_by_name('w:0')
     b= graph.get_tensor_by_name('b:0')
-    #W = tf.get_variable("w:0")
-    #b =  tf.get_variable("b:0")
-    print(self.context.shape)
-    print(self.embed.shape)
-    print(W.shape)
-    print(b.shape)
-    '''  
-    weights = tf.Variable(
-        tf.truncated_normal([embedding_size, vocabulary_size],
-                            stddev=1.0 / math.sqrt(embedding_size)))
-    biases = tf.Variable(tf.zeros([vocabulary_size]))
-    hidden_out = tf.transpose(tf.matmul(tf.transpose(weights), tf.transpose(embed))) + biases
-    [embed, vocab]---> w.T*e.T + b 
-
-
-        self.scores = self.linear(self.embed,
-                      output_dim = self.vocabulary_size,
-                      is_training = self.is_training,
-                      do_batch_norm = self.batch_norm, 
-                      init_deviation = 1.0 / math.sqrt(self.embedding_size),
-                      reg = REG)
-
-
-      nce_weights = tf.Variable(
-          tf.truncated_normal([vocabulary_size, embedding_size],
-                              stddev=1.0 / math.sqrt(embedding_size)))
-      nce_biases = tf.Variable(tf.zeros([vocabulary_size]))
-
-                      
-    '''    
+   
     
     nce_loss = tf.nn.nce_loss(weights=tf.transpose(W),    # [embedding, vocab]
                        biases=b,            # [vocab size]
@@ -170,5 +141,4 @@ class Model(Net):
     # grab the 'valid embeddings' for comparison.
     valid_embeddings = tf.nn.embedding_lookup(normalized_embeddings, self.valid_dataset)
     self.similarity = tf.matmul(valid_embeddings, normalized_embeddings, transpose_b=True)
-    print('xxxxxxxxxxxxxxxxxxxxxxx')
-    print(self.similarity.shape)
+

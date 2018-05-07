@@ -46,11 +46,11 @@ def collect_data(db_defs,number_of_samples = None):
     db.query(str)
 
   
-    
     if number_of_samples != None:
       str = ("""SELECT var_1,var_2 FROM _test_input_pair_list LIMIT %d""" % number_of_samples)
     else:
       str = ("""SELECT var_1,var_2 FROM _test_input_pair_list""")
+    
     # grab the data...
     data = mysql_query(db,str)
     data = np.asarray(data)

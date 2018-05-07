@@ -52,8 +52,7 @@ class Net(object):
         
         
     b=tf.get_variable("b", [output_dim], initializer=tf.constant_initializer(0.0))
-    print(w.name)
-    print(b.name)
+
     
     # apply linear layer.
     y = tf.matmul(x,w)+b

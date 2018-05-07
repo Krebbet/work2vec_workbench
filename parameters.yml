@@ -9,7 +9,7 @@ database:
 model_param:
     model_type: nce         # defines the model to be used
     embedding_size: 300     # vector length of the word embedding
-    vocabulary_size: 10000  # Size of dictionary entries.
+    vocabulary_size: 40000  # Size of dictionary entries.
     test_size: 8           # number of test words to grab
     test_window: 100        # choose test words from the 'test_size' most common words
     batch_norm: False       # use batch norm?
