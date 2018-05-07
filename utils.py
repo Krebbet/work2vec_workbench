@@ -55,7 +55,7 @@ def collect_data(db_defs,number_of_samples = None):
     data = mysql_query(db,str)
     data = np.asarray(data)
     target_words = data[:,0]
-    context = data[:,1]
+    context = np.reshape(data[:,1],(-1,1))
 
     return target_words, context
 

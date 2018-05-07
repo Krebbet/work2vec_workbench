@@ -78,13 +78,12 @@ class Solver(object):
       
     '''
     # define params locally for readability
-    print('xxxxx')
     model = self.m     
     batch_size = param['batch_size']
     id = param['id']
     
     # set up all the directories to send the model and logs...
-    model_dest,_ = generate_directories(model.name,id)
+    root_dir, model_dest,_ = generate_directories(model.name,id)
 
     # set the training feed.
     fetches=[]
@@ -103,7 +102,7 @@ class Solver(object):
       saver = tf.train.Saver()
       
       # initialize variables -> need to add code to load if loading trained model.
-      if os.path.exists(model_dest):
+      if os.path.exists(root_dir):
         print('loaded model!')
         saver.restore(sess, model_dest) 
       else:  
@@ -158,7 +157,7 @@ class Solver(object):
 
     
     # set up all the directories to send the model and logs...
-    model_dest,log_dir = generate_directories(model.name,id)
+    _ , model_dest,log_dir = generate_directories(model.name,id)
 
    
   
