@@ -72,6 +72,7 @@ def create_model(model_param,model_specific_params):
 def generate_directories(name,id):
     model_dest = os.path.join(name, id,'model')
     log_dir = os.path.join(name, id, 'logs')
-    return model_dest,log_dir
+    root_dir = os.path.join(name, id)
+    return root_dir, model_dest,log_dir
     
       
