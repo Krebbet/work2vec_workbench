@@ -82,7 +82,7 @@ class Model(Net):
                                     
     # apply a linear layer over the entire vocab.
     # This layer
-    with tf.variable_scope('embedding'):
+    with tf.name_scope('embedding'):
       self.scores = self.linear(self.embed,
                     output_dim = self.vocabulary_size,
                     is_training = self.is_training,
