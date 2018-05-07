@@ -1,0 +1,34 @@
+database:
+     name: greenwichhr_w2v_workbench
+     usrid: greenwichhr_dev_1
+     password: ~!pL&F2G,#u8
+     ip: 67.227.191.254
+     port: 3306
+     
+     
+model_param:
+    model_type: nce         # defines the model to be used
+    embedding_size: 300     # vector length of the word embedding
+    vocabulary_size: 10000  # Size of dictionary entries.
+    test_size: 8           # number of test words to grab
+    test_window: 100        # choose test words from the 'test_size' most common words
+    batch_norm: False       # use batch norm?
+    
+    
+# model specific params!!!    
+naive_model:
+    none: none 
+    
+nce:
+    negative_samples: 64
+    
+  
+solver_param:
+    id: default                 # This is what the model will be saved under (or loaded from)
+    epoch: 1                    # number of times to run through the data
+    batch_size: 128
+    learning_rate: 1.0
+    read_out: 10000                   # when to read out run information (itteration)
+    similarity_readout: 1       # how often to check similarity readings (by epoch)
+    check_point: 1               # how often to checkpoint the model (by epoch)
+    print_top_k: 5               # number of nearest neighbours to print out during training
