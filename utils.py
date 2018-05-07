@@ -19,7 +19,7 @@ def str_to_bool(s):
 
          
          
-def mysql_query(cmd,maxrows=0):
+def mysql_query(db,cmd,maxrows=0):
   db.query(cmd)
   r=db.store_result()
   return r.fetch_row(maxrows=maxrows)
@@ -37,8 +37,6 @@ def connect_to_db(db_defs):
   return db                  
 
 
-
-         
 def collect_data(db_defs,number_of_samples = None):
     # connect to db 
     db = connect_to_db(db_defs)
@@ -54,7 +52,7 @@ def collect_data(db_defs,number_of_samples = None):
     else:
       str = ("""SELECT var_1,var_2 FROM _test_input_pair_list""")
     # grab the data...
-    data = mysql_query(str)
+    data = mysql_query(db,str)
     data = np.asarray(data)
     target_words = data[:,0]
     context = data[:,1]
