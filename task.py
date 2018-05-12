@@ -1,4 +1,4 @@
-#import MySQLdb as mysql
+import MySQLdb as mysql
 import yaml
 
 
@@ -11,7 +11,7 @@ from utils import collect_data
 #from utils2 import generate_batch
 import numpy as np
 
-from models.constants import *
+from constants import *
 
 
 # extract all parameters for the yml definitions file
@@ -30,9 +30,9 @@ def main():
   
 
   print('Collect Data ....')
-  #target_words, context, count = collect_data(db_defs,5000)
-  data, count, dictionary, reverse_dictionary = collect_data2(vocabulary_size=model_param['vocabulary_size'])
-  target_words, context = generate_batch(data, 500, 2, 2)
+  target_words, context, dictionary, reverse_dictionary = collect_data(db_defs,5000)
+  #data, count, dictionary, reverse_dictionary = collect_data2(vocabulary_size=model_param['vocabulary_size'])
+  #target_words, context = generate_batch(data, 500, 2, 2)
   
   #data, count, dictionary, reverse_dictionary = collect_data2(vocabulary_size=model_param['vocabulary_size'])
   print('Done Collect Data.')
@@ -41,14 +41,13 @@ def main():
   # build model...
   model = create_model(model_param,model_specific_params)
   print('Model drawn')
-                            
-             
+
 
   # Initialize the solver object.
   solver = Solver(model)
   
   # train model....
-  solver.train(target_words,context,solver_param)
+  solver.train(target_words,context, dictionary, reverse_dictionary,solver_param)
   
   
   #grab embeddings for some sample data.

@@ -36,6 +36,19 @@ def connect_to_db(db_defs):
          
   return db                  
 
+def load_dictionary(db,db_defs,n = None):
+  print('xxxxx')
+
+  if n == None:
+    str = ("""SELECT element,code FROM %s""" % (db_defs['dictionary_table']))    
+  else:
+    str = ("""SELECT element,code FROM %s LIMIT %d""" % (db_defs['dictionary_table'],n))
+
+  data = mysql_query(db,str)  
+  reverse_dictionary = dict((y, x) for x, y in data)
+  dictionary = dict((x, y) for x, y in data)
+
+  return dictionary, reverse_dictionary
 
 def collect_data(db_defs,number_of_samples = None):
     # connect to db 
@@ -47,9 +60,10 @@ def collect_data(db_defs,number_of_samples = None):
 
   
     if number_of_samples != None:
-      str = ("""SELECT var_1,var_2 FROM _test_input_pair_list LIMIT %d""" % number_of_samples)
+    
+      str = ("""SELECT var_1,var_2 FROM %s LIMIT %d""" % (db_defs['data_table'],number_of_samples))
     else:
-      str = ("""SELECT var_1,var_2 FROM _test_input_pair_list""")
+      str = ("""SELECT var_1,var_2 FROM %s""" % (db_defs['data_table']))
     
     # grab the data...
     data = mysql_query(db,str)
@@ -57,7 +71,12 @@ def collect_data(db_defs,number_of_samples = None):
     target_words = data[:,0]
     context = np.reshape(data[:,1],(-1,1))
 
-    return target_words, context
+    dictionary, reverse_dictionary  = None, None
+    if (db_defs['load_dictionary'] == True):
+      dictionary, reverse_dictionary = load_dictionary(db,db_defs)
+
+    
+    return target_words, context, dictionary, reverse_dictionary
 
     
     

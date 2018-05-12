@@ -130,7 +130,7 @@ class Solver(object):
     return embedding        
   
   
-  def train(self,target_words,context,param):
+  def train(self,target_words,context,dictionary, reverse_dictionary,param):
     '''
     This routine takes in training data target_words and 
     context pairing and trains the word embedding, using the 
@@ -253,7 +253,10 @@ class Solver(object):
             for k in range(top_k):
               #close_word = reverse_dictionary[nearest[k]]
               close_word = nearest[k]
-              log_str = '%s %d,' % (log_str, close_word)
+              if reverse_dictionary == None:
+                log_str = '%s %d,' % (log_str, close_word)
+              else: 
+                log_str = '%s %s,' % (log_str, reverse_dictionary[close_word])
             print(log_str)        
       
         
