@@ -6,7 +6,7 @@ database:
      port: 3306
      data_table: _test_input_pair_list
      dictionary_table: _ref_master_dictionary
-     load_dictionary: False
+     load_dictionary: True
      
      
      
