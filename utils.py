@@ -99,7 +99,7 @@ def grab_data_shard(db,db_defs,No,dN):
     target_words = data[:,0]
     context = np.reshape(data[:,1],(-1,1))
     
-    print('returning %d of %d points' % (n,dN))
+    #print('returning %d of %d points' % (n,dN))
     return target_words, context, n
 
 

@@ -1,4 +1,5 @@
 '''
+xxx
 This solver unit is to simplify the model 
 code and to reduce repeated code...
 
@@ -239,6 +240,7 @@ class Solver(object):
           
           # make sure we do not put in an empty data set
           if n == 0:
+            print('n = 0')
             break
           
           No += shard_size
@@ -250,15 +252,17 @@ class Solver(object):
           
           
 
-          for i in range(iterations_per_epoch):
+          for i in range(iterations_per_shard):
             
             # print out tracking information to make sure everything is running correctly...
             if ( (i + iterations_per_shard*(shard_n -1)) % param['read_out'] == 0):
-              print('%d of %d for shard %d' % (i , iterations_per_shard,shard_n))
+              #print('*********************************************')
+              #print('%d of %d for shard %d' % (i , iterations_per_shard,shard_n))
               print('%d of %d for epoch %d' % (i + iterations_per_shard*(shard_n -1),iterations_per_epoch,e))
-            
+              
             # Grab the batch data... (handle modified batches...)
             if batch_size*(i + 1) > len(target_words):
+              print('last batch of shard...')
               target_batch = target_words[mask[batch_size*i:]]
               context_batch = context[mask[batch_size*i:]]            
             else :
