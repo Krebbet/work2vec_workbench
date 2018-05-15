@@ -29,8 +29,9 @@ def main():
   
   
 
-  print('Collect Data ....')
-  target_words, context, dictionary, reverse_dictionary = collect_data(db_defs,5000)
+  print('Initialize DB connection....')
+  db,dictionary,reverse_dictionary = utils.initialize_db_connection(db_defs)
+  #target_words, context, dictionary, reverse_dictionary = collect_data(db_defs,5000)
   #data, count, dictionary, reverse_dictionary = collect_data2(vocabulary_size=model_param['vocabulary_size'])
   #target_words, context = generate_batch(data, 500, 2, 2)
   
@@ -47,7 +48,7 @@ def main():
   solver = Solver(model)
   
   # train model....
-  solver.train(target_words,context, dictionary, reverse_dictionary,solver_param)
+  solver.train(db, db_defs, dictionary, reverse_dictionary,solver_param)
   
   
   #grab embeddings for some sample data.

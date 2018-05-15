@@ -27,7 +27,6 @@ def mysql_query(db,cmd,maxrows=0):
          
          
 def connect_to_db(db_defs):
-  print('trying to connect to db...')
   # create connection to the database.
   db = mysql.connect(host=db_defs['ip'],
                     user=db_defs['usrid'],
@@ -36,8 +35,16 @@ def connect_to_db(db_defs):
          
   return db                  
 
+  
+def get_data_count(db,db_defs):
+    str ="""SELECT COUNT(*) FROM %s """ % (db_defs['data_table'])
+    res = mysql_query(db,str)  
+    print('xxxxxxxxxxxx')
+    print(res)
+    print(res[0][0])
+    return res[0][0]
+  
 def load_dictionary(db,db_defs,n = None):
-  print('xxxxx')
 
   if n == None:
     str = ("""SELECT element,code FROM %s""" % (db_defs['dictionary_table']))    
@@ -50,6 +57,55 @@ def load_dictionary(db,db_defs,n = None):
 
   return dictionary, reverse_dictionary
 
+def initialize_db_connection(db_defs):
+    '''
+    Initialize the database connection and return 
+    the dictionaries for the solver...
+    '''
+    # connect to db 
+    db = connect_to_db(db_defs)
+    
+    #choose db....
+    str = ("""USE %s """ % db_defs['name'])
+    db.query(str)
+
+
+    dictionary, reverse_dictionary  = None, None
+    if (db_defs['load_dictionary'] == True):
+      dictionary, reverse_dictionary = load_dictionary(db,db_defs)
+
+    
+    return db, dictionary, reverse_dictionary
+
+    
+
+
+
+  
+def grab_data_shard(db,db_defs,No,dN):
+    '''
+    Grabs a section of data from the db.
+    
+    dN = the max number of points returned
+    No = the position in the record to begin drawing points from 
+    db = the database connection object
+    db_defs -> database definitons -> table names and the likes.
+    '''
+
+    str = ("""SELECT var_1,var_2 FROM %s LIMIT %d OFFSET %d""" % (db_defs['data_table'],dN,No))
+
+    # grab the data...
+    data = mysql_query(db,str)
+    data = np.asarray(data)
+    n = len(data)
+    target_words = data[:,0]
+    context = np.reshape(data[:,1],(-1,1))
+    
+    print('returning %d of %d points' % (n,dN))
+    return target_words, context, n
+
+
+  
 def collect_data(db_defs,number_of_samples = None):
     # connect to db 
     db = connect_to_db(db_defs)
@@ -60,7 +116,6 @@ def collect_data(db_defs,number_of_samples = None):
 
   
     if number_of_samples != None:
-    
       str = ("""SELECT var_1,var_2 FROM %s LIMIT %d""" % (db_defs['data_table'],number_of_samples))
     else:
       str = ("""SELECT var_1,var_2 FROM %s""" % (db_defs['data_table']))

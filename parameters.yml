@@ -30,6 +30,7 @@ nce:
 solver_param:
     id: default                 # This is what the model will be saved under (or loaded from)
     epoch: 1                    # number of times to run through the data
+    shard_size: 500000
     batch_size: 128
     learning_rate: 1.0
     read_out: 10000                   # when to read out run information (itteration)

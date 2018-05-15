@@ -130,9 +130,11 @@ class Solver(object):
     return embedding        
   
   
-  def train(self,target_words,context,dictionary, reverse_dictionary,param):
+  #def train(self,target_words,context,dictionary, reverse_dictionary,param):
+  def train(self,db,db_defs,dictionary, reverse_dictionary,param):
     '''
-    This routine takes in training data target_words and 
+    This routine takes in the database connection to the 
+    training data target_words and 
     context pairing and trains the word embedding, using the 
     model architecture fed into the solver object.
     
@@ -154,6 +156,7 @@ class Solver(object):
     batch_size = param['batch_size']
     id = param['id']
     top_k = param['print_top_k']
+    shard_size = param['shard_size']
 
     
     # set up all the directories to send the model and logs...
@@ -170,21 +173,29 @@ class Solver(object):
     fetches.extend([self.train_op])
 
     # determine the counter values.
-    num_train = len(target_words)
- 
-    iterations_per_epoch = max(num_train // batch_size, 1)
-    if (num_train % batch_size) != 0: 
-      iterations_per_epoch -= 1
+    num_train = utils.get_data_count(db,db_defs)
+
+    iterations_per_shard = max(shard_size // batch_size, 1) 
+    if (shard_size % batch_size) != 0 :
+      iterations_per_shard += 1
+
+    shards_per_epoch = max(num_train // shard_size, 1)
+    iterations_per_epoch = iterations_per_shard*shards_per_epoch   \
+      + (num_train % shard_size) // batch_size 
+
+
     num_iterations = epoch * iterations_per_epoch
-    
+
     print('***********************************************')
     print('Begining training of %s model is id: %s' % (model.name,id))    
-    print('Training Points:',num_train)
-    print('Batch size =',batch_size)
-    print('Epoch:',epoch,'(iters/epoch):',iterations_per_epoch)
-    print('Total Iterations:',num_iterations)
+    print('Training Points: %d' % (num_train))
+    print('Batch size = %d' % (batch_size))
+    print('Shard Size: %d (iters/shard): %d' % (shard_size,iterations_per_shard))
+    print('Epoch: %d  shards/epoch: %d iters/epoch: %d' % (epoch,shards_per_epoch,iterations_per_epoch))
+    print('Total Iterations: %d' % (num_iterations))
     print('model will be saved to: %s' % model_dest)
     print('logs will be stored in: %s' % log_dir)
+
     
     
     with tf.Session() as sess:
@@ -213,59 +224,87 @@ class Solver(object):
       for e in range(epoch):
         # create a mask to shuffle the data
         # uniquely each epoch.
-        mask = np.arange(num_train)
-        np.random.shuffle(mask)
+        
+        # draw data from db in controllable shards.
+        No = 0
+        n = dN
+        shard_n = 0
 
-        for i in range(iterations_per_epoch):
-          if (i % param['read_out'] == 0):
-            print('%d of %d for epoch %d' %(i,iterations_per_epoch,e))
+        while (n == dN):
           
-          # Grab the batch data...
-          target_batch = target_words[mask[batch_size*i:batch_size*(i +1)]]
-          context_batch = context[mask[batch_size*i:batch_size*(i +1)]]
           
-
-          feed_dict={model.target_words:target_batch,
-                     model.context:context_batch,
-                     model.is_training:True}      
+          target_words, context, n = utils.grab_data_shard(db,db_defs,No,dN)
           
-
-          # do training on batch, return the summary and any results...
-          [summary,_]=sess.run([merged,fetches],feed_dict)
+          # make sure we do not put in an empty data set
+          if n == 0:
+            break
+          
+          No += dN
+          shard_n += 1
 
           
-          # write summary to writer
-          writer.add_summary(summary, i + e*iterations_per_epoch)
+          mask = np.arange(n)
+          np.random.shuffle(mask)
+          
+          
+
+          for i in range(iterations_per_epoch):
+            
+            # print out tracking information to make sure everything is running correctly...
+            if ( (i + iterations_per_shard*(shard_n -1)) % param['read_out'] == 0):
+              print('%d of %d for shard %d' % (i , iterations_per_shard,shard_n))
+              print('%d of %d for epoch %d' % (i + iterations_per_shard*(shard_n -1),iterations_per_epoch,e))
+            
+            # Grab the batch data... (handle modified batches...)
+            if batch_size*(i + 1) > len(target_words):
+              target_batch = target_words[mask[batch_size*i:]]
+              context_batch = context[mask[batch_size*i:]]            
+            else :
+              target_batch = target_words[mask[batch_size*i:batch_size*(i +1)]]
+              context_batch = context[mask[batch_size*i:batch_size*(i +1)]]
+            
+
+            feed_dict={model.target_words:target_batch,
+                       model.context:context_batch,
+                       model.is_training:True}      
+            
+
+            # do training on batch, return the summary and any results...
+            [summary,_]=sess.run([merged,fetches],feed_dict)
+
+            
+            # write summary to writer
+            writer.add_summary(summary, i + e*iterations_per_epoch)
+          
+          
+          # epoch done, check word similarities....
+          # Note: I do not have access to the word library so 
+          # I cannot create my own reverse lookup...
+          # we can set this up pretty easy tho.
+          if (e % param['similarity_readout'] == 0):
+            [sim] = sess.run([model.similarity])
+            for i in range(model.test_size):
+              #valid_word = reverse_dictionary[model.valid_examples[i]]
+              valid_word = model.valid_examples[i]
+              #x = -sim[i, :].argsort()
+              nearest = (-sim[i, :]).argsort()[1:top_k + 1]
+              log_str = 'Nearest to %s:' % valid_word
+              for k in range(top_k):
+                #close_word = reverse_dictionary[nearest[k]]
+                close_word = nearest[k]
+                if reverse_dictionary == None:
+                  log_str = '%s %d,' % (log_str, close_word)
+                else: 
+                  log_str = '%s %s,' % (log_str, reverse_dictionary[close_word])
+              print(log_str)        
         
-        
-        # epoch done, check word similarities....
-        # Note: I do not have access to the word library so 
-        # I cannot create my own reverse lookup...
-        # we can set this up pretty easy tho.
-        if (e % param['similarity_readout'] == 0):
-          [sim] = sess.run([model.similarity])
-          for i in range(model.test_size):
-            #valid_word = reverse_dictionary[model.valid_examples[i]]
-            valid_word = model.valid_examples[i]
-            #x = -sim[i, :].argsort()
-            nearest = (-sim[i, :]).argsort()[1:top_k + 1]
-            log_str = 'Nearest to %s:' % valid_word
-            for k in range(top_k):
-              #close_word = reverse_dictionary[nearest[k]]
-              close_word = nearest[k]
-              if reverse_dictionary == None:
-                log_str = '%s %d,' % (log_str, close_word)
-              else: 
-                log_str = '%s %s,' % (log_str, reverse_dictionary[close_word])
-            print(log_str)        
-      
-        
-        # checkpoint the model while training... 
-        if (e % param['check_point'] == 0):
-          saver.save(sess,model_dest, global_step=e+1)
-        print('%d of %d epoch complete.' % (1+e,epoch))
-        
-        
+          
+          # checkpoint the model while training... 
+          if (e % param['check_point'] == 0):
+            saver.save(sess,model_dest, global_step=e+1)
+          print('%d of %d epoch complete.' % (1+e,epoch))
+          
+          
   
       ## TRAINING FINISHED ##
       # saves variables learned during training
