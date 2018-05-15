@@ -224,7 +224,7 @@ class Solver(object):
       
       print('Begin Training')
       print('***********************************************')
-      
+      print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
       for e in range(epoch):
         # create a mask to shuffle the data
         # uniquely each epoch.
