@@ -224,7 +224,6 @@ class Solver(object):
       
       print('Begin Training')
       print('***********************************************')
-      print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
       for e in range(epoch):
         # create a mask to shuffle the data
         # uniquely each epoch.
@@ -284,34 +283,37 @@ class Solver(object):
             writer.add_summary(summary, i + e*iterations_per_epoch)
           
           
-          # epoch done, check word similarities....
-          # Note: I do not have access to the word library so 
-          # I cannot create my own reverse lookup...
-          # we can set this up pretty easy tho.
-          if (e % param['similarity_readout'] == 0):
-            [sim] = sess.run([model.similarity])
-            for i in range(model.test_size):
-              #valid_word = reverse_dictionary[model.valid_examples[i]]
+        # epoch done, check word similarities....
+        # Note: I do not have access to the word library so 
+        # I cannot create my own reverse lookup...
+        # we can set this up pretty easy tho.
+        if (e % param['similarity_readout'] == 0):
+          [sim] = sess.run([model.similarity])
+          for i in range(model.test_size):
+            if reverse_dictionary == None:
               valid_word = model.valid_examples[i]
-              #x = -sim[i, :].argsort()
-              nearest = (-sim[i, :]).argsort()[1:top_k + 1]
-              log_str = 'Nearest to %s:' % valid_word
-              for k in range(top_k):
-                #close_word = reverse_dictionary[nearest[k]]
-                close_word = nearest[k]
-                if reverse_dictionary == None:
-                  log_str = '%s %d,' % (log_str, close_word)
-                else: 
-                  log_str = '%s %s,' % (log_str, reverse_dictionary[close_word])
-              print(log_str)        
+            else :
+              valid_word = reverse_dictionary[model.valid_examples[i]]
+            #valid_word = model.valid_examples[i]
+            #x = -sim[i, :].argsort()
+            nearest = (-sim[i, :]).argsort()[1:top_k + 1]
+            log_str = 'Nearest to %s:' % valid_word
+            for k in range(top_k):
+              #close_word = reverse_dictionary[nearest[k]]
+              close_word = nearest[k]
+              if reverse_dictionary == None:
+                log_str = '%s %d,' % (log_str, close_word)
+              else: 
+                log_str = '%s %s,' % (log_str, reverse_dictionary[close_word])
+            print(log_str)        
+      
         
-          
-          # checkpoint the model while training... 
-          if (e % param['check_point'] == 0):
-            saver.save(sess,model_dest, global_step=e+1)
-          print('%d of %d epoch complete.' % (1+e,epoch))
-          
-          
+        # checkpoint the model while training... 
+        if (e % param['check_point'] == 0):
+          saver.save(sess,model_dest, global_step=e+1)
+        print('%d of %d epoch complete.' % (1+e,epoch))
+        
+        
   
       ## TRAINING FINISHED ##
       # saves variables learned during training
