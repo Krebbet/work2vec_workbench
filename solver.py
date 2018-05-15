@@ -256,8 +256,8 @@ class Solver(object):
             
             # print out tracking information to make sure everything is running correctly...
             if ( (i + iterations_per_shard*(shard_n -1)) % param['read_out'] == 0):
-              #print('*********************************************')
-              #print('%d of %d for shard %d' % (i , iterations_per_shard,shard_n))
+              print('*********************************************')
+              print('%d of %d for shard %d' % (i , iterations_per_shard,shard_n))
               print('%d of %d for epoch %d' % (i + iterations_per_shard*(shard_n -1),iterations_per_epoch,e))
               
             # Grab the batch data... (handle modified batches...)
