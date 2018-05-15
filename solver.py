@@ -11,8 +11,10 @@ import math
 import io
 import tensorflow as tf
 
-
+# utils imports
 from utils import generate_directories
+from utils import get_data_count
+from utils import grab_data_shard
 
 
 class Solver(object):
