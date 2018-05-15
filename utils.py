@@ -37,11 +37,9 @@ def connect_to_db(db_defs):
 
   
 def get_data_count(db,db_defs):
+    # GRAB THE NUMBER OF DATA POINTS IN TABLE
     str ="""SELECT COUNT(*) FROM %s """ % (db_defs['data_table'])
     res = mysql_query(db,str)  
-    print('xxxxxxxxxxxx')
-    print(res)
-    print(res[0][0])
     return res[0][0]
   
 def load_dictionary(db,db_defs,n = None):
