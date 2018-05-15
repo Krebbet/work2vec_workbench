@@ -229,19 +229,19 @@ class Solver(object):
         
         # draw data from db in controllable shards.
         No = 0
-        n = dN
+        n = shard_size
         shard_n = 0
 
-        while (n == dN):
+        while (n == shard_size):
           
           
-          target_words, context, n = grab_data_shard(db,db_defs,No,dN)
+          target_words, context, n = grab_data_shard(db,db_defs,No,shard_size)
           
           # make sure we do not put in an empty data set
           if n == 0:
             break
           
-          No += dN
+          No += shard_size
           shard_n += 1
 
           
