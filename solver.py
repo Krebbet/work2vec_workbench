@@ -175,7 +175,7 @@ class Solver(object):
     fetches.extend([self.train_op])
 
     # determine the counter values.
-    num_train = utils.get_data_count(db,db_defs)
+    num_train = get_data_count(db,db_defs)
 
     iterations_per_shard = max(shard_size // batch_size, 1) 
     if (shard_size % batch_size) != 0 :
@@ -235,7 +235,7 @@ class Solver(object):
         while (n == dN):
           
           
-          target_words, context, n = utils.grab_data_shard(db,db_defs,No,dN)
+          target_words, context, n = grab_data_shard(db,db_defs,No,dN)
           
           # make sure we do not put in an empty data set
           if n == 0:
